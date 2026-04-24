@@ -86,36 +86,56 @@ Verify:
 codex mcp get xmlui
 ```
 
-## Step 4: Create a project (optional)
+## Step 4: Download the weather app
 
-Ask the user whether they want a new XMLUI project.
+First ask the user whether they want to scaffold a starter project. Use "yes" as the default recommendation.
 
-If yes:
+If yes, ask the user where to create the project. Offer `~/xmlui-weather` as the recommended default (template: `xmlui-weather`), and the current directory as an alternative. The user can also enter a custom path.
 
-1. List templates:
+If no, skip Step 4 and Step 5.
+
+Once you have the target path (resolve `~` to `$HOME` on macOS/Linux, or `%USERPROFILE%` on Windows), check whether the directory already exists:
+
+macOS/Linux:
 
 ```bash
-xmlui list-demos
+test -d <target-path> && echo "exists" || echo "ok"
 ```
 
-2. Ask for template (default: `xmlui-weather`).
-3. Ask for output directory name (default: `xmlui-weather`).
-4. Create the project:
+Windows:
 
 ```bash
-xmlui new <template> --output <project-name>
+Test-Path -LiteralPath "<target-path>"
+```
+
+If it exists, tell the user and stop. Do not overwrite.
+
+Otherwise, create the weather project at the chosen path:
+
+```bash
+xmlui new xmlui-weather --output <target-path>
 ```
 
 Windows helper script:
 
 ```bash
-scripts/dev-setup.cmd -Template <template> -ProjectName <project-name>
+scripts/dev-setup.cmd -Template xmlui-weather -ProjectName <target-path>
 ```
+
+Remember the chosen path. You will need it in Step 5.
+
+## Step 5: Start the dev server
+
+After scaffolding succeeds, start the app:
+
+```bash
+cd <target-path> && xmlui run
+```
+
+The dev server should open the app in the default browser.
 
 ## Final message
 
 When complete, report:
 
-- Setup completed.
-- Whether MCP `xmlui` was added or already present.
-- If a project was created, include its path and next command to run it.
+**Your XMLUI environment is ready.** See the [README](https://github.com/xmlui-org/xmlui-codex#readme) for a guided tour of the XMLUI MCP tools and the Inspector.
