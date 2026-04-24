@@ -19,6 +19,12 @@ Recommended single entrypoint:
 - Windows: `scripts/xmlui-setup.cmd`
 - macOS/Linux: `scripts/xmlui-setup.sh`
 
+The setup flow is not complete after MCP configuration. After the XMLUI MCP
+server is configured, the user must always be prompted about scaffolding the
+starter project. In an interactive terminal, the setup script may ask directly.
+In a non-interactive terminal, Codex must ask the user in chat and then rerun the
+setup script with the user's explicit choice.
+
 Work through the steps below in order.
 
 ## Step 1: Preflight
@@ -86,13 +92,33 @@ Verify:
 codex mcp get xmlui
 ```
 
-## Step 4: Download the weather app
+## Step 4: Prompt for starter project scaffolding
 
-First ask the user whether they want to scaffold a starter project. Use "yes" as the default recommendation.
+After MCP configuration, ask the user whether they want to scaffold a starter
+project. Use "yes" as the default recommendation.
 
 If yes, ask the user where to create the project. Offer `~/xmlui-weather` as the recommended default (template: `xmlui-weather`), and the current directory as an alternative. The user can also enter a custom path.
 
 If no, skip Step 4 and Step 5.
+
+In a non-interactive shell, do not treat the unavailable prompt as "no", and do
+not rerun setup with the skip flag unless the user explicitly says no. If the
+setup entrypoint exits with code `2` after printing the scaffold question, stop
+and ask the user in chat:
+
+```text
+Do you want to scaffold the XMLUI starter project? The recommended default is yes, at ~/xmlui-weather. You can also choose the current directory or provide a custom path.
+```
+
+Then continue based on the user's answer:
+
+- If yes/default: rerun setup with the create-project flag and selected path.
+  - Windows: `scripts/xmlui-setup.cmd -CreateProject -ProjectName <target-path>`
+  - macOS/Linux: `scripts/xmlui-setup.sh --create-project --project-name=<target-path>`
+- If no: rerun setup with the skip-project-prompt flag only to record the
+  explicit skip and finish cleanly.
+  - Windows: `scripts/xmlui-setup.cmd -SkipProjectPrompt`
+  - macOS/Linux: `scripts/xmlui-setup.sh --skip-project-prompt`
 
 Once you have the target path (resolve `~` to `$HOME` on macOS/Linux, or `%USERPROFILE%` on Windows), check whether the directory already exists:
 

@@ -79,9 +79,14 @@ if ($CreateProject) {
       & (Join-Path $scriptRoot "dev-setup.ps1") -Template $Template -ProjectName $ProjectName -NoRun:$NoRun
     }
   } else {
-    Write-Log "Non-interactive shell detected; skipping automatic scaffolding."
-    Write-Log "Scaffold prompt: create starter project from '$Template' at '$defaultProjectPath' (default)."
-    Write-Log "To scaffold now, rerun with -CreateProject [-ProjectName <path>]."
-    Write-Log "To explicitly skip this prompt behavior, rerun with -SkipProjectPrompt."
+    Write-Log "Non-interactive shell detected; starter project scaffolding still needs a choice."
+    Write-Log "Scaffold starter project ($Template)? [Y/n]"
+    Write-Log "Recommended path: $defaultProjectPath"
+    Write-Log "Alternative (current directory): $cwdProjectPath"
+    Write-Log "Codex should ask the user this question in chat now."
+    Write-Log "Do not skip scaffolding unless the user explicitly answers no."
+    Write-Log "Answer yes by rerunning with -CreateProject [-ProjectName <path>]."
+    Write-Log "Answer no by rerunning with -SkipProjectPrompt."
+    exit 2
   }
 }

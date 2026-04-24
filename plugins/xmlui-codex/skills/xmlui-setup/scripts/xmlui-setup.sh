@@ -88,9 +88,14 @@ elif [[ "${SKIP_PROJECT_PROMPT}" != "yes" ]]; then
       "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}"
     fi
   else
-    echo "[xmlui-codex] Non-interactive shell detected; skipping automatic scaffolding."
-    echo "[xmlui-codex] Scaffold prompt: create starter project from '${TEMPLATE}' at '${DEFAULT_PROJECT_PATH}' (default)."
-    echo "[xmlui-codex] To scaffold now, rerun with --create-project [--project-name=<path>]."
-    echo "[xmlui-codex] To explicitly skip this prompt behavior, rerun with --skip-project-prompt."
+    echo "[xmlui-codex] Non-interactive shell detected; starter project scaffolding still needs a choice."
+    echo "[xmlui-codex] Scaffold starter project (${TEMPLATE})? [Y/n]"
+    echo "[xmlui-codex] Recommended path: ${DEFAULT_PROJECT_PATH}"
+    echo "[xmlui-codex] Alternative (current directory): ${CWD_PROJECT_PATH}"
+    echo "[xmlui-codex] Codex should ask the user this question in chat now."
+    echo "[xmlui-codex] Do not skip scaffolding unless the user explicitly answers no."
+    echo "[xmlui-codex] Answer yes by rerunning with --create-project [--project-name=<path>]."
+    echo "[xmlui-codex] Answer no by rerunning with --skip-project-prompt."
+    exit 2
   fi
 fi
