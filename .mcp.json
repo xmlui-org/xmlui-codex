@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "xmlui": {
+      "type": "stdio",
+      "command": "xmlui",
+      "args": ["mcp"]
+    }
+  }
+}
