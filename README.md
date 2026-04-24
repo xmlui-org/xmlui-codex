@@ -38,6 +38,7 @@ xmlui-setup.cmd
 ```
 
 The setup flow installs the XMLUI CLI if needed, registers the XMLUI MCP server with Codex, and can scaffold a starter project.
+Choose explicitly whether to scaffold an XMLUI project (default template/path: `xmlui-weather` at `~/xmlui-weather`).
 
 ## Explore the MCP tools
 
