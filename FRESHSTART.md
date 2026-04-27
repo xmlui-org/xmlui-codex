@@ -84,8 +84,6 @@ This restart is required. It ensures the plugin skills and MCP metadata are load
 
 Use the plugin in chat, not from the plugin browser.
 
-There is no Claude-style `/xmlui:xmlui-setup` command in Codex.
-
 To access the plugin explicitly:
 
 ```text

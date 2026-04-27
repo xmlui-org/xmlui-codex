@@ -1,204 +1,93 @@
-# xmlui-codex
+# XMLUI Quickstart
 
-Codex plugin for XMLUI onboarding with setup scripts, MCP registration helpers, and XMLUI trace distillation support.
+Get a running XMLUI app, an AI assistant that knows the XMLUI docs, and a built-in Inspector for debugging in under 5 minutes.
 
-This repo is meant to work like `xmlui-claude`: users should add the repo as a marketplace source in Codex. Manual cloning is for local development only.
+## Prerequisites
 
-## Install in Codex
+Codex
 
-1. Add the marketplace from the published repo:
+## Add a marketplace
 
 ```bash
 codex plugin marketplace add xmlui-org/xmlui-codex
 ```
 
-2. Restart Codex if it is already running.
+If Codex is already running when you add the marketplace, restart Codex once so `/plugins` can see `XMLUI for Codex`.
 
-Why this restart matters:
-
-- If you added the marketplace from a live Codex session, restart once now so `/plugins` can see the new `XMLUI for Codex` marketplace.
-- If Codex was not running when you added the marketplace, there is nothing to restart yet.
-
-3. Open the plugin browser explicitly:
+## Install the XMLUI plugin
 
 ```text
 /plugins
 ```
 
-4. Type `xmlui-codex` to filter the list instead of scrolling the full marketplace.
-
-5. Open `xmlui-codex` from the `XMLUI for Codex` marketplace.
+Type `xmlui-codex` to filter the list, open `xmlui-codex` from `XMLUI for Codex`, and press `Space` to install or enable it.
 
 What you should see before install:
 
-- The plugin details page shows `xmlui-codex · Can be installed · xmlui-codex`.
-- The menu includes `Install plugin`.
-- The details mention skills `xmlui-codex:distill-trace` and `xmlui-codex:xmlui-setup`.
-- The details mention MCP server `xmlui`.
+- `xmlui-codex · Can be installed · xmlui-codex`
+- `Install plugin`
+- skills `xmlui-codex:distill-trace` and `xmlui-codex:xmlui-setup`
+- MCP server `xmlui`
 
-6. Install or enable the plugin.
-
-What you should see after install:
-
-- The `/plugins` list shows `xmlui-codex` as `Installed`.
-- The selected row shows `Space to disable; Enter view details.`
-
-7. Exit the plugin browser and restart Codex after enabling the plugin.
-
-Why this restart matters:
-
-- This restart is required. It loads the plugin skills and MCP metadata into the new session.
+**Restart Codex now.** This restart is required after enabling the plugin so its skills and MCP metadata load into the new session.
 
 Restart summary:
 
-- If you add the marketplace while Codex is already open, expect two restarts total:
-  - one after `codex plugin marketplace add ...`
-  - one after enabling `xmlui-codex` in `/plugins`
-- If you add the marketplace before launching Codex, only the post-enable restart is needed.
+- If you added the marketplace while Codex was already open, there are two restarts total: one after `codex plugin marketplace add ...`, and one after enabling `xmlui-codex` in `/plugins`.
+- If you added the marketplace before launching Codex, this post-install restart is the only restart you need.
 
-Use the plain repo command above. Do not sparse-checkout only `.agents/plugins`, because this marketplace resolves the plugin from `./plugins/xmlui-codex`.
+## Set up
 
-The plugin includes:
-
-- XMLUI CLI installation flow for Windows and Bash environments
-- Codex MCP server registration for XMLUI (`xmlui mcp`)
-- Optional XMLUI project scaffolding
-- Skills:
-  - `xmlui-setup`: environment bootstrap
-  - `distill-trace`: summarize XMLUI Inspector trace exports
-
-## Run setup
-
-The plugin browser is only for install/enable. After the plugin is installed, use it in chat.
-
-There is no Claude-style `/xmlui:xmlui-setup` slash command in Codex.
-
-To access the plugin in Codex:
+Open the skill picker, activate `xmlui-codex`, then ask for setup:
 
 ```text
 /skills
 ```
 
-or press `$` in chat to open the picker directly.
+or press `$` in chat and choose `xmlui-codex`.
 
-Look for `xmlui-codex`. When you activate it, Codex shows that the plugin is available in the session and asks what XMLUI task you want to do.
-
-At that point, ask for setup in plain English:
-
-- "Set up XMLUI for this machine"
-- "Install XMLUI and configure the MCP server"
-
-You can also ask Codex to run `xmlui-setup`, but the normal UX is to ask for the task in natural language after activating `xmlui-codex`.
-
-The setup flow installs the XMLUI CLI if needed, registers the XMLUI MCP server with Codex, and can scaffold a starter project.
-
-What to expect during setup:
-
-- If `xmlui` is already installed and the `xmlui` MCP server is already configured, the setup run may still stop and ask for an explicit starter-project decision.
-- This is expected. The setup contract requires Codex to ask whether it should scaffold the `xmlui-weather` starter project instead of assuming yes or no.
-- The recommended default path is `~/xmlui-weather`, but you can also choose the current directory or provide a custom path.
-- If you do not want a starter app, tell Codex to skip starter-project scaffolding.
-- If scaffolding needs to download the `xmlui-weather` template, Codex may need approval to rerun the setup outside the sandbox so network access is available.
-- On success, the setup flow scaffolds `~/xmlui-weather` and starts `xmlui run`.
-
-## End-to-End Flow
-
-This is the tested `xmlui-claude`-style path in Codex:
-
-1. Add the marketplace with `codex plugin marketplace add xmlui-org/xmlui-codex`.
-2. Restart Codex only if it was already running.
-3. Open `/plugins`, filter to `xmlui-codex`, and install it from `XMLUI for Codex`.
-4. Restart Codex after enabling the plugin.
-5. Open `/skills` or press `$`, activate `xmlui-codex`, and ask:
+Then say:
 
 ```text
 Set up XMLUI for this machine
 ```
 
-6. Let setup finish preflight, CLI install checks, and MCP registration.
-7. When setup asks about scaffolding, accept the recommended path `~/xmlui-weather` unless you want a different target.
-8. Let setup create `xmlui-weather` and start `xmlui run`.
-9. Use the weather app, open XMLUI Inspector, export a trace, and then ask:
+This downloads the XMLUI CLI if needed, configures the `xmlui` MCP server if needed, creates the `xmlui-weather` app in a directory you choose, and starts the dev server.
 
-```text
-distill and analyze the trace
-```
+If `xmlui` and the `xmlui` MCP server are already installed, setup can still stop and ask whether it should scaffold `xmlui-weather`. That prompt is expected. The recommended default is `~/xmlui-weather`.
 
-10. After the trace summary, continue with natural-language editing requests such as:
-
-- `center the input box and button as group, and center the radio group on a new row`
-- `add three tables that report hourly temperatures for three user-specifiable cities`
+If template download needs network access, Codex may ask to rerun setup outside the sandbox.
 
 ## Explore the MCP tools
 
-Default registration:
+The plugin gives Codex access to the XMLUI documentation via MCP tools.
 
-```bash
-codex mcp add xmlui -- xmlui mcp
-```
+Ask Codex: "What XMLUI MCP tools are available to you?"
 
-Windows-safe alternatives:
+It can use these tools to answer questions like:
 
-```bat
-codex.cmd mcp add xmlui -- xmlui.exe mcp
-codex.cmd mcp add xmlui -- "C:\path\to\xmlui.exe" mcp
-```
+- How do I paginate a list or table?
+- How do I handle errors in a DataSource?
+- What layout components are available?
 
-Verify the server configuration:
-
-```bash
-codex mcp get xmlui
-```
-
-If PowerShell shims are blocked on Windows, use `xmlui.cmd`, `xmlui.exe`, `codex.cmd`, or the `.cmd` wrappers in this plugin.
+If you're writing the XMLUI code yourself, you'll search the documentation to find the answers. The MCP server helps Codex do that.
 
 ## Use the Inspector
 
-The plugin includes the `distill-trace` skill for XMLUI Inspector trace exports.
+The weather app includes the Inspector. It records traces of everything your app does, so you and Codex can see what is going on.
 
-If you want a sample project to inspect:
+### Run the app
 
-```bash
-xmlui list-demos
-xmlui new xmlui-weather --output xmlui-weather
-```
+When it loads, the app makes an API call to fetch weather for Santa Rosa, CA, and displays the data. Click the Inspector and expand the Startup phase to see what happened. This is your distilled view of a much more detailed log.
 
-To find it in the skill picker, look for `distill-trace (xmlui-codex)`.
+Close Inspector and switch to another city. Then open Inspector again, click Export, and say to Codex: "distill and analyze the trace".
 
-After exporting a trace from XMLUI Inspector, ask Codex to run `distill-trace`, or ask naturally, for example: "distill and analyze this trace".
+## Modify the layout
 
-## Local development
+You have a running app, an AI that knows about XMLUI, and a way for you and the AI to observe the app's behavior. Try making changes. The layout isn't great, ask Codex to "center the input box and button as group, and center the radio group on a new row". Expect Codex to use the MCP tools to find an answer based on a documented how-to example that provably works. Don't be afraid to challenge Codex to prove its answer and cite evidence.
 
-You do not need to clone this repo to use the plugin. Clone it only if you are developing or testing the plugin itself.
+When Codex previews a plausible answer, approve it and refresh the browser. Did it work? Great! If not, capture a screenshot of the botched layout, paste it into Codex, and tell it to look harder for an evidence-based solution.
 
-From a local checkout, use the repo-root wrapper:
+## Add a feature
 
-```bash
-bash ./xmlui-setup.sh
-```
-
-On Windows:
-
-```bat
-xmlui-setup.cmd
-```
-
-or the plugin entrypoint directly:
-
-```bash
-bash ./plugins/xmlui-codex/xmlui-setup.sh
-```
-
-Windows plugin entrypoint:
-
-```bat
-plugins\xmlui-codex\xmlui-setup.cmd
-```
-
-Using `bash ...` avoids needing executable bits on nested scripts.
-
-## References
-
-- Codex plugin docs: https://developers.openai.com/codex/plugins/build
-- Codex skills docs: https://developers.openai.com/codex/skills
-- Codex MCP docs: https://developers.openai.com/codex/mcp
+Ask Codex to "add three tables that report hourly temperatures for three user-specifiable cities". If things go wrong, challenge Codex to cite evidence for its proposed solution. If Codex needs more information about what went wrong, export a trace for it to analyze.
