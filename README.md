@@ -14,6 +14,8 @@ codex plugin marketplace add xmlui-org/xmlui-codex
 
 Then restart Codex, open the Plugin Directory, and install `xmlui-codex` from the `XMLUI for Codex` marketplace.
 
+In the `/plugins` UI, type `xmlui-codex` to filter the list instead of scrolling the full marketplace.
+
 Use the plain repo command above. Do not sparse-checkout only `.agents/plugins`, because this marketplace resolves the plugin from `./plugins/xmlui-codex`.
 
 The plugin includes:
@@ -27,7 +29,9 @@ The plugin includes:
 
 ## Run setup
 
-After the plugin is installed, ask Codex to run `xmlui-setup`, or ask naturally:
+The plugin browser is only for install/enable. After the plugin is installed, use it in chat.
+
+Ask Codex to run `xmlui-setup`, or ask naturally:
 
 - "Set up XMLUI for this machine"
 - "Install XMLUI and configure the MCP server"
