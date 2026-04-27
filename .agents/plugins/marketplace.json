@@ -1,7 +1,7 @@
 {
-  "name": "local-repo",
+  "name": "xmlui-codex",
   "interface": {
-    "displayName": "Local Repo Plugins"
+    "displayName": "XMLUI for Codex"
   },
   "plugins": [
     {

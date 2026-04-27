@@ -5,6 +5,9 @@
   "author": {
     "name": "XMLUI"
   },
+  "homepage": "https://github.com/xmlui-org/xmlui-codex",
+  "repository": "https://github.com/xmlui-org/xmlui-codex",
+  "keywords": ["xmlui", "codex", "mcp", "setup"],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json"
 }

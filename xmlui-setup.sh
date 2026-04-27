@@ -3,4 +3,4 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec bash "${SCRIPT_DIR}/skills/xmlui-setup/scripts/xmlui-setup.sh" "$@"
+exec bash "${SCRIPT_DIR}/plugins/xmlui-codex/xmlui-setup.sh" "$@"

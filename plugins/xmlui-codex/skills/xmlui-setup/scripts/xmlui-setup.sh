@@ -48,19 +48,19 @@ elif [[ "${PROJECT_NAME}" == ~/* ]]; then
   PROJECT_NAME="${HOME}/${PROJECT_NAME#~/}"
 fi
 
-"${SCRIPT_DIR}/preflight.sh"
+bash "${SCRIPT_DIR}/preflight.sh"
 
 if ! command -v xmlui >/dev/null 2>&1; then
-  "${SCRIPT_DIR}/install-cli.sh"
+  bash "${SCRIPT_DIR}/install-cli.sh"
 fi
 
-"${SCRIPT_DIR}/configure-mcp.sh"
+bash "${SCRIPT_DIR}/configure-mcp.sh"
 
 if [[ "${CREATE_PROJECT}" == "yes" ]]; then
   if [[ "${NO_RUN}" == "yes" ]]; then
-    "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}" --no-run
+    bash "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}" --no-run
   else
-    "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}"
+    bash "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}"
   fi
 elif [[ "${SKIP_PROJECT_PROMPT}" != "yes" ]]; then
   if [[ -t 0 && -t 1 ]]; then
@@ -83,9 +83,9 @@ elif [[ "${SKIP_PROJECT_PROMPT}" != "yes" ]]; then
       fi
     fi
     if [[ "${NO_RUN}" == "yes" ]]; then
-      "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}" --no-run
+      bash "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}" --no-run
     else
-      "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}"
+      bash "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}"
     fi
   else
     echo "[xmlui-codex] Non-interactive shell detected; starter project scaffolding still needs a choice."
