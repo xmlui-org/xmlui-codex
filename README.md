@@ -28,20 +28,17 @@ Type `xmlui-codex` to filter the list, open `xmlui-codex` from `XMLUI for Codex`
 
 **Restart Codex now.** This restart is required after enabling the plugin so its skills and MCP server load into the new session. This is the only restart you need — the `xmlui` MCP server is registered automatically by the plugin's `.mcp.json` and lazy-installs the XMLUI CLI on first use.
 
-After restarting, type `$xmlui-codex` in chat to confirm the plugin is loaded. Codex should reply that `xmlui-codex` is available in this workspace and list the two skills:
+After restarting, type `$xmlui` in chat to confirm the plugin is loaded. You should see:
 
-- `xmlui-codex:xmlui-setup` for scaffolding an XMLUI starter project
-- `xmlui-codex:distill-trace` for analyzing an exported XMLUI Inspector trace
+```
+xmlui-codex                  [Plugin] XMLUI development environment setup for Codex
+XMLUI Setup                  [Skill] Scaffold an XMLUI starter project
+distill-trace (xmlui-codex)  [Skill] Analyze or distill an XMLUI Inspector trace. Use 
+```
 
 ## Set up
 
-You verified the plugin is loaded by typing `$xmlui-codex` above. Now tell Codex what you want it to do:
-
-```text
-Set up XMLUI for this machine
-```
-
-(Alternatively, press `$` in chat to open the skill picker and select `XMLUI Setup` directly.)
+Now choose `XMLUI Setup`.
 
 The setup skill scaffolds the `xmlui-weather` app in a directory you choose (the recommended default is `~/xmlui-weather`). It does not start the dev server, register MCP, or add `xmlui` to your shell PATH — the plugin's `.mcp.json` already registered the MCP server when you enabled the plugin.
 
