@@ -22,16 +22,14 @@ codex plugin marketplace add xmlui-org/xmlui-codex
 
 Type `xmlui-codex` to filter the list, open `xmlui-codex` from `XMLUI for Codex`, and press `Space` to install or enable it.
 
-What you should see before install:
-
-- `xmlui-codex · Can be installed · xmlui-codex`
-- `Install plugin`
-- skills `xmlui-codex:distill-trace` and `xmlui-codex:xmlui-setup`
-- declared MCP server `xmlui`
-
 **Restart #1: restart Codex now.** This restart is required after enabling the plugin so its skills and MCP metadata load into the new session.
 
 A second restart is required later, after setup runs. Codex binds MCP servers at session start and does not hot-reload them, so the `xmlui` MCP server that setup registers only becomes live in the session after that.
+
+After restarting, type `$xmlui-codex` in chat to confirm the plugin is loaded. Codex should reply that `xmlui-codex` is available in this workspace and list the two skills:
+
+- `xmlui-codex:xmlui-setup` for installing/configuring an XMLUI dev environment
+- `xmlui-codex:distill-trace` for analyzing an exported XMLUI Inspector trace
 
 ## Set up
 
