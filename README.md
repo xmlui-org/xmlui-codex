@@ -10,11 +10,15 @@ Codex.
 
 ## Add a marketplace
 
+Run this in your OS shell (bash, zsh, PowerShell, etc.):
+
 ```bash
 codex plugin marketplace add xmlui-org/xmlui-codex
 ```
 
 ## Install the XMLUI plugin
+
+Now start Codex, then type this at the Codex prompt (not your OS shell):
 
 ```text
 /plugins
