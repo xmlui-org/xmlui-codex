@@ -265,16 +265,12 @@ loaded into the new session.
 
 Use the plugin in chat, not from the plugin browser.
 
-To access the plugin explicitly:
+To access the plugin explicitly, type `$xmlui-codex` at the Codex prompt, or
+press `$` to open the skill picker and select `xmlui-codex` (or the
+`XMLUI Setup` skill directly).
 
-```text
-/skills
-```
-
-or press `$` in chat to open the picker directly.
-
-Look for `xmlui-codex`. When you activate it, Codex will tell you the plugin is
-available in the session and prompt you for the XMLUI task.
+When you activate it, Codex will tell you the plugin is available in the
+session and prompt you for the XMLUI task.
 
 The plugin declares an `xmlui` MCP server, but the setup flow is what installs
 the CLI and registers a runnable `xmlui` server for this machine.

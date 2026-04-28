@@ -37,19 +37,13 @@ After restarting, type `$xmlui-codex` in chat to confirm the plugin is loaded. C
 
 ## Set up
 
-Open the skill picker, activate `xmlui-codex`, then ask for setup:
-
-```text
-/skills
-```
-
-or press `$` in chat and choose `xmlui-codex`.
-
-Then say:
+You verified the plugin is loaded by typing `$xmlui-codex` above. Now tell Codex what you want it to do:
 
 ```text
 Set up XMLUI for this machine
 ```
+
+(Alternatively, press `$` in chat to open the skill picker and select `XMLUI Setup` directly.)
 
 This downloads the XMLUI CLI if needed into `~/.codex/plugins/data/xmlui-codex/bin/`, registers the promised `xmlui` MCP server with Codex to use that binary, creates the `xmlui-weather` app in a directory you choose, and starts the dev server. It does not add `xmlui` to your shell PATH.
 
