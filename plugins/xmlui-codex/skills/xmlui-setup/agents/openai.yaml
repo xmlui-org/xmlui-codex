@@ -1,7 +1,7 @@
 interface:
   display_name: "XMLUI Setup"
-  short_description: "Install XMLUI CLI, configure MCP, and scaffold a project"
-  default_prompt: "Use $xmlui-setup to install XMLUI, configure MCP, and scaffold a starter project."
+  short_description: "Scaffold an XMLUI starter project"
+  default_prompt: "Use $xmlui-setup to scaffold an XMLUI starter project. The MCP server and CLI install themselves automatically."
 
 policy:
   allow_implicit_invocation: true
