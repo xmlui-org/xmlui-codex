@@ -4,7 +4,7 @@ Get a running XMLUI app, an AI assistant that knows the XMLUI docs, and a built-
 
 ## Prerequisites
 
-Codex.
+Codex. Install from the [Codex CLI docs](https://developers.openai.com/codex/cli) (or `npm i -g @openai/codex` / `brew install --cask codex`). Source: [openai/codex](https://github.com/openai/codex).
 
 **Quit any running Codex sessions before you start.** This guide assumes Codex is not running when you add the marketplace, which keeps the restart count predictable: two restarts total, one after enabling the plugin and one after running setup.
 
