@@ -38,11 +38,13 @@ distill-trace (xmlui-codex)  [Skill] Analyze or distill an XMLUI Inspector trace
 
 ## Set up
 
-Again start Codex, then type this at the Codex prompt (not your OS shell):
+Now type this at the Codex prompt (not your OS shell):
 
 ```text
 /skills
 ```
+
+Choose `List Skills` or type `$`.
 
 Choose `XMLUI Setup`.
 
