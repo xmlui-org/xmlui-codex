@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 Write-Log "Installing XMLUI CLI"
 
 $downloadUrl = "https://github.com/xmlui-org/xmlui-cli/releases/latest/download/xmlui-win-x64.zip"
-$installDir = if ($env:XMLUI_CLI_INSTALL_DIR) { $env:XMLUI_CLI_INSTALL_DIR } else { Join-Path $HOME "bin" }
+$installDir = Get-XmluiInstallDir
 
 New-Item -ItemType Directory -Force -Path $installDir | Out-Null
 
@@ -30,29 +30,11 @@ try {
   Copy-Item -LiteralPath $exePath -Destination $targetPath -Force
   Write-Log "Installed: $targetPath"
 
-  $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-  if (-not $userPath) {
-    $userPath = ""
-  }
-
-  $pathSegments = $userPath -split ";" | Where-Object { $_ -ne "" }
-  if ($pathSegments -notcontains $installDir) {
-    $newUserPath = if ($userPath) { "$userPath;$installDir" } else { $installDir }
-    [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
-    Write-Log "Added $installDir to user PATH"
-  } else {
-    Write-Log "$installDir is already on user PATH"
-  }
-
-  if (($env:Path -split ";") -notcontains $installDir) {
-    $env:Path = "$env:Path;$installDir"
-  }
-
   $xmluiCmd = Get-XmluiCommand
   if ($xmluiCmd) {
-    Write-Log "CLI is available on PATH via '$xmluiCmd'"
+    Write-Log "Binary managed by xmlui-codex at '$xmluiCmd'"
   } else {
-    Write-WarnLog "CLI is not yet available in this shell. Open a new terminal."
+    Write-WarnLog "CLI install completed but the managed binary could not be resolved."
   }
 }
 finally {

@@ -27,7 +27,7 @@ What you should see before install:
 - `xmlui-codex · Can be installed · xmlui-codex`
 - `Install plugin`
 - skills `xmlui-codex:distill-trace` and `xmlui-codex:xmlui-setup`
-- MCP server `xmlui`
+- declared MCP server `xmlui`
 
 **Restart Codex now.** This restart is required after enabling the plugin so its skills and MCP metadata load into the new session.
 
@@ -52,7 +52,9 @@ Then say:
 Set up XMLUI for this machine
 ```
 
-This downloads the XMLUI CLI if needed, configures the `xmlui` MCP server if needed, creates the `xmlui-weather` app in a directory you choose, and starts the dev server.
+This downloads the XMLUI CLI if needed into `~/.codex/plugins/data/xmlui-codex/bin/`, registers the promised `xmlui` MCP server with Codex to use that binary, creates the `xmlui-weather` app in a directory you choose, and starts the dev server. It does not add `xmlui` to your shell PATH.
+
+Installing the plugin declares the `xmlui` MCP server in plugin metadata. Running setup is what makes that server runnable on this machine.
 
 If `xmlui` and the `xmlui` MCP server are already installed, setup can still stop and ask whether it should scaffold `xmlui-weather`. That prompt is expected. The recommended default is `~/xmlui-weather`.
 

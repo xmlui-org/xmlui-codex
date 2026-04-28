@@ -3,6 +3,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/common.sh"
 
 CREATE_PROJECT="no"
 SKIP_PROJECT_PROMPT="no"
@@ -50,7 +52,7 @@ fi
 
 bash "${SCRIPT_DIR}/preflight.sh"
 
-if ! command -v xmlui >/dev/null 2>&1; then
+if ! get_xmlui_command >/dev/null 2>&1; then
   bash "${SCRIPT_DIR}/install-cli.sh"
 fi
 

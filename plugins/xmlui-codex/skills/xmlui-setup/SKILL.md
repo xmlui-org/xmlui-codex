@@ -40,19 +40,17 @@ Do not proceed until preflight passes.
 
 ## Step 2: Install the XMLUI CLI
 
-Check whether `xmlui` is already available on PATH.
+Do not require `xmlui` to be on PATH. The setup scripts manage the CLI in the plugin-owned location `~/.codex/plugins/data/xmlui-codex/bin/` by default.
 
-- If installed, skip to Step 3.
-- If missing, run install script for the current OS:
+- If the managed CLI is already present, skip to Step 3.
+- If missing, run the install script for the current OS:
   - Windows: `scripts/install-cli.cmd` (or `scripts/install-cli.ps1`)
   - macOS/Linux: `scripts/install-cli.sh`
-
-On Windows, if `xmlui` points to a blocked PowerShell shim, use `xmlui.exe` or `xmlui.cmd` for verification.
 
 After installation, verify with:
 
 ```bash
-xmlui --help
+~/.codex/plugins/data/xmlui-codex/bin/xmlui --help
 ```
 
 If the command is still missing, stop and report the install failure.
@@ -70,20 +68,26 @@ If `xmlui` is already configured, skip to Step 4.
 If not configured, add it:
 
 ```bash
-codex mcp add xmlui -- xmlui mcp
+codex mcp add xmlui -- ~/.codex/plugins/data/xmlui-codex/bin/xmlui mcp
 ```
 
-If that fails on Windows, retry with:
+If `xmlui` is already configured with custom args or a custom command, do not overwrite it automatically — unless its `command:` does not resolve to an executable. A stale entry pointing at a missing binary will fail MCP startup; in that case, remove and replace it. Otherwise explain that the existing server was preserved.
+
+If the existing `xmlui` entry only uses plain `mcp` args, it is safe to update it to the plugin-managed CLI path.
+
+On Windows, use:
 
 ```bash
-codex mcp add xmlui -- xmlui.exe mcp
+codex mcp add xmlui -- %USERPROFILE%\.codex\plugins\data\xmlui-codex\bin\xmlui.exe mcp
 ```
+
+If setup runs from Git Bash on Windows, register the native Windows path, not the MSYS `/c/...` path.
 
 If `codex` is blocked by execution policy on Windows, use:
 
 ```bash
 codex.cmd mcp list
-codex.cmd mcp add xmlui -- xmlui.exe mcp
+codex.cmd mcp add xmlui -- %USERPROFILE%\.codex\plugins\data\xmlui-codex\bin\xmlui.exe mcp
 ```
 
 Verify:
@@ -139,7 +143,7 @@ If it exists, tell the user and stop. Do not overwrite.
 Otherwise, create the weather project at the chosen path:
 
 ```bash
-xmlui new xmlui-weather --output <target-path>
+~/.codex/plugins/data/xmlui-codex/bin/xmlui new xmlui-weather --output <target-path>
 ```
 
 Windows helper script:
@@ -152,13 +156,21 @@ Remember the chosen path. You will need it in Step 5.
 
 ## Step 5: Start the dev server
 
-After scaffolding succeeds, start the app:
+Before starting a new dev server, check whether one is already responding on the
+default local URL `http://127.0.0.1:8080/` (or the `XMLUI_DEV_PORT` override if
+the setup scripts expose one in the environment). If the app already responds,
+report that the existing server is healthy and do not start another `xmlui run`.
+
+If no server is up yet, start the app:
 
 ```bash
-cd <target-path> && xmlui run
+cd <target-path> && ~/.codex/plugins/data/xmlui-codex/bin/xmlui run
 ```
 
-The dev server should open the app in the default browser.
+Do not assume a detached/background launch succeeded. Confirm that the app becomes
+reachable on the local URL before reporting success. If it never responds, stop
+and tell the user that the server did not become ready instead of requesting a
+second `xmlui run` blindly.
 
 ## Final message
 

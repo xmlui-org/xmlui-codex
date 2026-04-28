@@ -41,27 +41,88 @@ detect_platform() {
   esac
 }
 
-ensure_path_export() {
-  local install_dir="$1"
-  local shell_name rc_file line
-
-  if [[ ":$PATH:" == *":${install_dir}:"* ]]; then
+get_xmlui_install_dir() {
+  if [[ -n "${XMLUI_CLI_INSTALL_DIR:-}" ]]; then
+    printf "%s\n" "${XMLUI_CLI_INSTALL_DIR}"
     return 0
   fi
 
-  shell_name="$(basename "${SHELL:-bash}")"
-  case "${shell_name}" in
-    zsh) rc_file="${HOME}/.zshrc" ;;
-    bash) rc_file="${HOME}/.bashrc" ;;
-    *) rc_file="${HOME}/.profile" ;;
-  esac
-
-  line="export PATH=\"${install_dir}:\$PATH\""
-  if [[ -f "${rc_file}" ]] && grep -Fq "${line}" "${rc_file}"; then
+  detect_platform
+  if [[ "${PLATFORM_OS}" == "win" ]] && [[ -n "${USERPROFILE:-}" ]] && command -v cygpath >/dev/null 2>&1; then
+    printf "%s\n" "$(cygpath -u "${USERPROFILE}")/.codex/plugins/data/xmlui-codex/bin"
     return 0
   fi
 
-  log "Adding ${install_dir} to PATH in ${rc_file}"
-  printf "\n%s\n" "${line}" >> "${rc_file}"
-  warn "Open a new terminal, or run: source ${rc_file}"
+  printf "%s\n" "${HOME}/.codex/plugins/data/xmlui-codex/bin"
+}
+
+get_xmlui_cli_path() {
+  local install_dir binary_name
+
+  detect_platform
+  install_dir="$(get_xmlui_install_dir)"
+  if [[ "${PLATFORM_OS}" == "win" ]]; then
+    binary_name="xmlui.exe"
+  else
+    binary_name="xmlui"
+  fi
+
+  printf "%s/%s\n" "${install_dir}" "${binary_name}"
+}
+
+get_xmlui_command() {
+  local cli_path
+
+  cli_path="$(get_xmlui_cli_path)"
+  if [[ -x "${cli_path}" ]]; then
+    printf "%s\n" "${cli_path}"
+    return 0
+  fi
+
+  return 1
+}
+
+get_xmlui_registration_path() {
+  local cli_path
+
+  cli_path="$(get_xmlui_cli_path)"
+  detect_platform
+  if [[ "${PLATFORM_OS}" == "win" ]] && command -v cygpath >/dev/null 2>&1; then
+    cygpath -w "${cli_path}"
+    return 0
+  fi
+
+  printf "%s\n" "${cli_path}"
+}
+
+get_xmlui_dev_host() {
+  printf "%s\n" "${XMLUI_DEV_HOST:-127.0.0.1}"
+}
+
+get_xmlui_dev_port() {
+  printf "%s\n" "${XMLUI_DEV_PORT:-8080}"
+}
+
+get_xmlui_dev_url() {
+  printf "http://%s:%s/\n" "$(get_xmlui_dev_host)" "$(get_xmlui_dev_port)"
+}
+
+probe_http_url() {
+  local url="$1"
+  curl --silent --output /dev/null --max-time 2 "${url}"
+}
+
+wait_for_http_url() {
+  local url="$1"
+  local timeout_seconds="${2:-15}"
+  local attempt
+
+  for ((attempt = 0; attempt < timeout_seconds; attempt += 1)); do
+    if probe_http_url "${url}"; then
+      return 0
+    fi
+    sleep 1
+  done
+
+  return 1
 }

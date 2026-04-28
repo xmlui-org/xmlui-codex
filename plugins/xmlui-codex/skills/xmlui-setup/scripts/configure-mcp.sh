@@ -9,32 +9,45 @@ source "${SCRIPT_DIR}/common.sh"
 log "Configuring XMLUI MCP server for Codex"
 
 require_cmd codex
+CLI_PATH="$(get_xmlui_cli_path)"
+REGISTRATION_PATH="$(get_xmlui_registration_path)"
 
-detect_platform
-if [[ "${PLATFORM_OS}" == "win" ]]; then
-  CLI_BINARY_NAME="xmlui.exe"
-else
-  CLI_BINARY_NAME="xmlui"
+if [[ ! -x "${CLI_PATH}" ]]; then
+  fail "XMLUI CLI not found at ${CLI_PATH}. Run install-cli first."
 fi
 
-if ! command -v "${CLI_BINARY_NAME}" >/dev/null 2>&1; then
-  fail "XMLUI CLI not on PATH. Run install-cli first."
+existing_config="$(codex mcp get xmlui 2>/dev/null || true)"
+if [[ -n "${existing_config}" ]]; then
+  if printf "%s\n" "${existing_config}" | grep -Fq "command: ${REGISTRATION_PATH}"; then
+    log "MCP server 'xmlui' already configured with plugin-managed CLI"
+    exit 0
+  fi
+
+  existing_command="$(printf "%s\n" "${existing_config}" | sed -n 's/^[[:space:]]*command:[[:space:]]*//p' | head -n 1)"
+
+  if [[ -n "${existing_command}" ]] && ! command -v "${existing_command}" >/dev/null 2>&1; then
+    warn "MCP server 'xmlui' command '${existing_command}' is not executable; replacing with plugin-managed CLI."
+    codex mcp remove xmlui >/dev/null 2>&1 || fail "Failed to remove existing MCP server 'xmlui'."
+  elif printf "%s\n" "${existing_config}" | grep -Eq '^[[:space:]]*args:[[:space:]]+mcp[[:space:]]*$'; then
+    log "Updating MCP server 'xmlui' to use ${REGISTRATION_PATH}"
+    codex mcp remove xmlui >/dev/null 2>&1 || fail "Failed to remove existing MCP server 'xmlui'."
+  else
+    warn "MCP server 'xmlui' already exists with a custom command or arguments; leaving it unchanged."
+    warn "To point it at the plugin-managed CLI, run:"
+    warn "  codex mcp remove xmlui"
+    warn "  codex mcp add xmlui -- ${REGISTRATION_PATH} mcp"
+    exit 0
+  fi
 fi
 
-if codex mcp get xmlui >/dev/null 2>&1; then
-  log "MCP server 'xmlui' already configured"
-  exit 0
-fi
-
-if codex mcp add xmlui -- xmlui mcp >/dev/null 2>&1; then
-  log "MCP server 'xmlui' configured with 'xmlui mcp'"
-elif [[ "${PLATFORM_OS}" == "win" ]] && codex mcp add xmlui -- xmlui.exe mcp >/dev/null 2>&1; then
-  log "MCP server 'xmlui' configured with 'xmlui.exe mcp'"
+if codex mcp add xmlui -- "${REGISTRATION_PATH}" mcp >/dev/null 2>&1; then
+  log "MCP server 'xmlui' configured with '${REGISTRATION_PATH} mcp'"
 else
   fail "Failed to configure MCP with 'codex mcp add'."
 fi
 
-if codex mcp get xmlui >/dev/null 2>&1; then
+existing_config="$(codex mcp get xmlui 2>/dev/null || true)"
+if printf "%s\n" "${existing_config}" | grep -Fq "command: ${REGISTRATION_PATH}"; then
   log "Verified MCP server 'xmlui'"
 else
   fail "MCP server 'xmlui' not found after add attempt"

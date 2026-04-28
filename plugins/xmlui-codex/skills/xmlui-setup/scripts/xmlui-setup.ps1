@@ -32,7 +32,7 @@ $cwdProjectPath = Join-Path (Get-Location).Path "xmlui-weather"
 
 & (Join-Path $scriptRoot "preflight.ps1")
 
-$xmluiDetected = Get-Command "xmlui.exe" -ErrorAction SilentlyContinue
+$xmluiDetected = Get-XmluiCommand
 if (-not $xmluiDetected) {
   & (Join-Path $scriptRoot "install-cli.ps1")
 }

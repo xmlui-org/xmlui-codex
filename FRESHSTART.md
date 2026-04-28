@@ -1,6 +1,7 @@
 # Fresh start
 
-These instructions are for testing `xmlui-codex` from a clean Codex state.
+These instructions are for testing `xmlui-codex` from a genuinely clean Codex
+state, not just re-adding the marketplace.
 
 They assume:
 
@@ -8,19 +9,92 @@ They assume:
 - you have access to the `codex` CLI
 - the plugin repo is published at `xmlui-org/xmlui-codex`
 
-## 1. Remove the previous marketplace
+## Quick command
 
-If you previously added the XMLUI marketplace, remove it first:
+You can preview the reset without changing anything:
+
+```bash
+./xmlui-reset.sh
+```
+
+To actually perform the plugin-level reset:
+
+```bash
+./xmlui-reset.sh --apply
+```
+
+To also wipe Codex history/session state:
+
+```bash
+./xmlui-reset.sh --apply --nuclear
+```
+
+To also remove the scaffolded starter project:
+
+```bash
+./xmlui-reset.sh --apply --remove-project
+```
+
+## What must be cleared
+
+For a plugin-level reset, remove all four persistence points:
+
+1. marketplace registration in `~/.codex/config.toml`
+2. plugin enabled state in `~/.codex/config.toml`
+3. marketplace checkout in `~/.codex/.tmp/marketplaces/xmlui-codex/`
+4. plugin cache and plugin-managed data under `~/.codex/plugins/`
+
+If you only remove the marketplace checkout, Codex can still remember that
+`xmlui-codex` was enabled.
+
+If you want a true amnesia reset, there is also historical Codex state under
+`~/.codex/` that can mention prior XMLUI sessions even after the plugin is gone.
+That historical state is covered in Step 9.
+
+## 1. Quit Codex completely
+
+Before cleaning state, quit every running Codex session.
+
+Why this matters:
+
+- a live session can keep plugin state in memory
+- Codex may rewrite config on exit
+- `/plugins` discovery is session-scoped
+
+## 2. Remove the marketplace registration
+
+If you previously added the XMLUI marketplace, remove it:
 
 ```bash
 codex plugin marketplace remove xmlui-codex
 ```
 
-This removes the marketplace registration from `~/.codex/config.toml`.
+This removes the `[marketplaces.xmlui-codex]` block from
+`~/.codex/config.toml`.
 
-## 2. Delete the cached marketplace checkout
+## 3. Remove the plugin enabled-state block
 
-Codex caches the added marketplace as a Git checkout under `~/.codex/.tmp/marketplaces/`.
+Codex currently persists plugin enablement separately from marketplace
+registration. Remove this block from `~/.codex/config.toml` if it exists:
+
+```toml
+[plugins."xmlui-codex@xmlui-codex"]
+enabled = true
+```
+
+Quick check:
+
+```bash
+rg -n '^\[plugins\."xmlui-codex@xmlui-codex"\]|^enabled = ' ~/.codex/config.toml
+```
+
+If the block is present, edit `~/.codex/config.toml` and delete it before
+restarting Codex.
+
+## 4. Delete the cached marketplace checkout
+
+Codex caches the added marketplace as a Git checkout under
+`~/.codex/.tmp/marketplaces/`.
 
 Delete the XMLUI marketplace cache:
 
@@ -34,7 +108,116 @@ Optional verification:
 test -d ~/.codex/.tmp/marketplaces/xmlui-codex && echo "still present" || echo "removed"
 ```
 
-## 3. Add the marketplace again
+## 5. Delete the plugin cache
+
+Codex also caches installed plugin payloads separately from the marketplace
+checkout.
+
+Delete the XMLUI plugin cache:
+
+```bash
+rm -rf ~/.codex/plugins/cache/xmlui-codex
+```
+
+Optional verification:
+
+```bash
+test -d ~/.codex/plugins/cache/xmlui-codex && echo "still present" || echo "removed"
+```
+
+## 6. Delete plugin-managed XMLUI data
+
+The setup flow installs the XMLUI CLI into a plugin-owned data directory:
+
+```bash
+rm -rf ~/.codex/plugins/data/xmlui-codex
+```
+
+This removes the plugin-managed binary at:
+
+```text
+~/.codex/plugins/data/xmlui-codex/bin/xmlui
+```
+
+Optional verification:
+
+```bash
+test -d ~/.codex/plugins/data/xmlui-codex && echo "still present" || echo "removed"
+```
+
+## 7. Remove the plugin-managed MCP server only if this plugin created it
+
+The setup flow may also register an `xmlui` MCP server. Check it:
+
+```bash
+codex mcp get xmlui
+```
+
+If the `command:` points at the plugin-managed path
+`~/.codex/plugins/data/xmlui-codex/bin/xmlui`, remove it:
+
+```bash
+codex mcp remove xmlui
+```
+
+If your `xmlui` MCP server points somewhere else, such as a separately managed
+`/usr/local/bin/xmlui`, leave it alone — that is not plugin state. But if that
+`command:` no longer exists on disk, remove the entry: a stale path will fail
+MCP startup and the setup skill will preserve a broken entry by default.
+
+## 8. Optional: remove the starter project
+
+If you also want to re-test scaffolding from scratch, remove the generated app:
+
+```bash
+rm -rf ~/xmlui-weather
+```
+
+Skip this if you want to preserve the project and only reset Codex/plugin state.
+
+## 9. Optional: wipe Codex history and session state too
+
+This is the nuclear option. It is not required to unload the plugin, but it is
+the only way to remove prior XMLUI traces from Codex's local history/state.
+
+Remove these if you want a genuinely fresh Codex profile:
+
+```bash
+rm -f ~/.codex/history.jsonl
+rm -rf ~/.codex/sessions
+rm -rf ~/.codex/shell_snapshots
+rm -f ~/.codex/state_5.sqlite ~/.codex/state_5.sqlite-shm ~/.codex/state_5.sqlite-wal
+rm -f ~/.codex/logs_2.sqlite ~/.codex/logs_2.sqlite-shm ~/.codex/logs_2.sqlite-wal
+```
+
+Use this only if you are intentionally discarding local Codex history.
+
+## 10. Verify that the reset is complete
+
+Before re-adding the marketplace, these checks should all come back clean:
+
+```bash
+rg -n '^\[marketplaces\.xmlui-codex\]|^\[plugins\."xmlui-codex@xmlui-codex"\]' ~/.codex/config.toml
+test -d ~/.codex/.tmp/marketplaces/xmlui-codex && echo "marketplace cache still present" || echo "marketplace cache removed"
+test -d ~/.codex/plugins/cache/xmlui-codex && echo "plugin cache still present" || echo "plugin cache removed"
+test -d ~/.codex/plugins/data/xmlui-codex && echo "plugin data still present" || echo "plugin data removed"
+```
+
+Expected result:
+
+- `rg` prints nothing
+- all three directory checks print `removed`
+
+If you also ran Step 9, these should be absent too:
+
+```bash
+test -f ~/.codex/history.jsonl && echo "history still present" || echo "history removed"
+test -d ~/.codex/sessions && echo "sessions still present" || echo "sessions removed"
+test -f ~/.codex/state_5.sqlite && echo "state db still present" || echo "state db removed"
+test -f ~/.codex/logs_2.sqlite && echo "logs db still present" || echo "logs db removed"
+```
+
+## 11. Add the marketplace again
 
 ```bash
 codex plugin marketplace add xmlui-org/xmlui-codex
@@ -46,18 +229,14 @@ Expected output should mention:
 - source: `https://github.com/xmlui-org/xmlui-codex.git`
 - installed marketplace root: `~/.codex/.tmp/marketplaces/xmlui-codex`
 
-## 4. Restart Codex so `/plugins` sees the marketplace
+## 12. Restart Codex so `/plugins` sees the marketplace
 
-If Codex is already running, quit it and start a fresh session now.
+Start a fresh Codex session now.
 
-Why this restart matters:
+If you added the marketplace from a prior live session and did not restart,
+`/plugins` will not reflect the new marketplace correctly.
 
-- Marketplace discovery is session-scoped.
-- If you added the marketplace from a live Codex session, the running session will not pick it up until restart.
-
-If Codex was not running when you added the marketplace, this is just your first launch.
-
-## 5. Install or enable the plugin
+## 13. Install or enable the plugin
 
 Open the plugin browser:
 
@@ -72,15 +251,17 @@ Then:
 3. Press `Space` to install or enable it.
 4. Leave the plugin browser.
 
-Codex does not currently expose a direct `codex plugin install ...` CLI command, so this step is done in the UI.
+Codex does not currently expose a direct `codex plugin install ...` or
+`codex plugin uninstall ...` CLI command, so this step is done in the UI.
 
-## 6. Restart Codex again
+## 14. Restart Codex again
 
 Quit Codex and start a new session after enabling the plugin.
 
-This restart is required. It ensures the plugin skills and MCP metadata are loaded into the new session.
+This restart is required. It ensures the plugin skills and MCP metadata are
+loaded into the new session.
 
-## 7. Run the setup skill
+## 15. Run the setup skill
 
 Use the plugin in chat, not from the plugin browser.
 
@@ -92,7 +273,11 @@ To access the plugin explicitly:
 
 or press `$` in chat to open the picker directly.
 
-Look for `xmlui-codex`. When you activate it, Codex will tell you the plugin is available in the session and prompt you for the XMLUI task.
+Look for `xmlui-codex`. When you activate it, Codex will tell you the plugin is
+available in the session and prompt you for the XMLUI task.
+
+The plugin declares an `xmlui` MCP server, but the setup flow is what installs
+the CLI and registers a runnable `xmlui` server for this machine.
 
 Examples:
 
@@ -109,12 +294,15 @@ install XMLUI and configure the MCP server
 The setup flow should:
 
 1. run preflight checks
-2. install the XMLUI CLI if needed
+2. install the XMLUI CLI if needed into `~/.codex/plugins/data/xmlui-codex/bin/`
 3. register the XMLUI MCP server with Codex
 4. ask whether to scaffold the starter project
 5. optionally start the dev server
 
-If `xmlui` is already installed and the `xmlui` MCP server is already configured, the setup run may still stop after verification and ask for the starter-project choice. That is expected. Codex must get an explicit yes/no answer before scaffolding `xmlui-weather`.
+If `xmlui` is already installed and the `xmlui` MCP server is already
+configured, the setup run may still stop after verification and ask for the
+starter-project choice. That is expected. Codex must get an explicit yes/no
+answer before scaffolding `xmlui-weather`.
 
 Recommended first-run choice:
 
@@ -128,22 +316,6 @@ After setup succeeds, the expected next flow is:
 2. export a trace from XMLUI Inspector
 3. ask Codex to `distill and analyze the trace`
 4. continue with natural-language app changes such as layout fixes or adding the three-city hourly tables
-
-## 8. Verify the marketplace state
-
-You can verify the marketplace was re-added with:
-
-```bash
-codex plugin marketplace add xmlui-org/xmlui-codex
-```
-
-If it is already present, Codex will print the installed marketplace root instead of adding a duplicate.
-
-You can also inspect the config entry:
-
-```bash
-rg -n '^\[marketplaces\.xmlui-codex\]|^source = ' ~/.codex/config.toml
-```
 
 ## Notes
 
@@ -159,6 +331,13 @@ rg -n '^\[marketplaces\.xmlui-codex\]|^source = ' ~/.codex/config.toml
 | What | Where |
 |------|-------|
 | Marketplace registration | `~/.codex/config.toml` |
+| Plugin enabled-state block | `~/.codex/config.toml` |
 | Cached marketplace checkout | `~/.codex/.tmp/marketplaces/xmlui-codex/` |
+| Plugin cache | `~/.codex/plugins/cache/xmlui-codex/` |
 | Published plugin inside the checkout | `~/.codex/.tmp/marketplaces/xmlui-codex/plugins/xmlui-codex/` |
-| Curated built-in plugin catalog | `~/.codex/.tmp/plugins/` |
+| Plugin-managed CLI binary | `~/.codex/plugins/data/xmlui-codex/bin/xmlui` |
+| Plugin-managed data root | `~/.codex/plugins/data/xmlui-codex/` |
+| Local conversation history | `~/.codex/history.jsonl` |
+| Local session snapshots | `~/.codex/sessions/` |
+| Local state database | `~/.codex/state_5.sqlite*` |
+| Local log database | `~/.codex/logs_2.sqlite*` |
