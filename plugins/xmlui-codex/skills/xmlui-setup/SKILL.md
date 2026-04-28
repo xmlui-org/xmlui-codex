@@ -53,22 +53,27 @@ If the command is still missing, stop and report the install failure.
 
 ## Step 3: Prompt for starter project scaffolding
 
-Ask the user whether they want to scaffold a starter project. Use "yes" as the default recommendation.
+Ask the user one question that covers both whether to scaffold and where. Do not ask separately. Recommend `~/xmlui-weather` as the default. The user can answer:
 
-If yes, ask the user where to create the project. Offer `~/xmlui-weather` as the recommended default (template: `xmlui-weather`), and the current directory as an alternative. The user can also enter a custom path.
+- `yes` (or anything affirmative, or just enter): scaffold at `~/xmlui-weather`
+- a path: scaffold at that path
+- `no`: skip scaffolding
 
 In a non-interactive shell, do not treat the unavailable prompt as "no", and do not rerun setup with the skip flag unless the user explicitly says no. If the setup entrypoint exits with code `2` after printing the scaffold question, stop and ask the user in chat:
 
 ```text
-Do you want to scaffold the XMLUI starter project? The recommended default is yes, at ~/xmlui-weather. You can also choose the current directory or provide a custom path.
+Scaffold the XMLUI starter project at ~/xmlui-weather? Reply yes (default), no, or a custom path.
 ```
 
 Then continue based on the user's answer:
 
-- If yes/default: rerun setup with the create-project flag and selected path.
+- yes/default: rerun setup with the recommended path.
+  - Windows: `scripts/xmlui-setup.cmd -CreateProject -ProjectName ~/xmlui-weather`
+  - macOS/Linux: `scripts/xmlui-setup.sh --create-project --project-name=~/xmlui-weather`
+- a custom path: rerun setup with that path.
   - Windows: `scripts/xmlui-setup.cmd -CreateProject -ProjectName <target-path>`
   - macOS/Linux: `scripts/xmlui-setup.sh --create-project --project-name=<target-path>`
-- If no: rerun setup with the skip-project-prompt flag to record the explicit skip and finish cleanly.
+- no: rerun setup with the skip-project-prompt flag to record the explicit skip and finish cleanly.
   - Windows: `scripts/xmlui-setup.cmd -SkipProjectPrompt`
   - macOS/Linux: `scripts/xmlui-setup.sh --skip-project-prompt`
 
