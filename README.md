@@ -4,15 +4,15 @@ Get a running XMLUI app, an AI assistant that knows the XMLUI docs, and a built-
 
 ## Prerequisites
 
-Codex
+Codex.
+
+**Quit any running Codex sessions before you start.** This guide assumes Codex is not running when you add the marketplace, which keeps the restart count predictable: two restarts total, one after enabling the plugin and one after running setup.
 
 ## Add a marketplace
 
 ```bash
 codex plugin marketplace add xmlui-org/xmlui-codex
 ```
-
-If Codex is already running when you add the marketplace, restart Codex once so `/plugins` can see `XMLUI for Codex`.
 
 ## Install the XMLUI plugin
 
@@ -29,12 +29,9 @@ What you should see before install:
 - skills `xmlui-codex:distill-trace` and `xmlui-codex:xmlui-setup`
 - declared MCP server `xmlui`
 
-**Restart Codex now.** This restart is required after enabling the plugin so its skills and MCP metadata load into the new session.
+**Restart #1: restart Codex now.** This restart is required after enabling the plugin so its skills and MCP metadata load into the new session.
 
-Restart summary:
-
-- If you added the marketplace while Codex was already open, there are two restarts total: one after `codex plugin marketplace add ...`, and one after enabling `xmlui-codex` in `/plugins`.
-- If you added the marketplace before launching Codex, this post-install restart is the only restart you need.
+A second restart is required later, after setup runs. Codex binds MCP servers at session start and does not hot-reload them, so the `xmlui` MCP server that setup registers only becomes live in the session after that.
 
 ## Set up
 
@@ -59,6 +56,10 @@ Installing the plugin declares the `xmlui` MCP server in plugin metadata. Runnin
 If `xmlui` and the `xmlui` MCP server are already installed, setup can still stop and ask whether it should scaffold `xmlui-weather`. That prompt is expected. The recommended default is `~/xmlui-weather`.
 
 If template download needs network access, Codex may ask to rerun setup outside the sandbox.
+
+**Restart #2: restart Codex once setup finishes.** The `xmlui` MCP server is now registered, but Codex only starts MCP servers at session boot. Without this restart, the XMLUI MCP tools will not be available even though `codex mcp get xmlui` shows the registration.
+
+After restarting, verify by asking Codex "What XMLUI MCP tools are available?" — it should enumerate the live tool list, not just the names cached in plugin files.
 
 ## Explore the MCP tools
 
