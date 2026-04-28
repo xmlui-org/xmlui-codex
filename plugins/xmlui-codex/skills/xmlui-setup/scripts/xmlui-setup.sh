@@ -56,8 +56,6 @@ if ! get_xmlui_command >/dev/null 2>&1; then
   bash "${SCRIPT_DIR}/install-cli.sh"
 fi
 
-bash "${SCRIPT_DIR}/configure-mcp.sh"
-
 if [[ "${CREATE_PROJECT}" == "yes" ]]; then
   if [[ "${NO_RUN}" == "yes" ]]; then
     bash "${SCRIPT_DIR}/dev-setup.sh" --template="${TEMPLATE}" --project-name="${PROJECT_NAME}" --no-run

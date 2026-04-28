@@ -127,43 +127,51 @@ test -d ~/.codex/plugins/cache/xmlui-codex && echo "still present" || echo "remo
 
 ## 6. Delete plugin-managed XMLUI data
 
-The setup flow installs the XMLUI CLI into a plugin-owned data directory:
+The plugin's `.mcp.json` lazy-installs the XMLUI CLI into a plugin-owned data
+directory. Remove it:
 
 ```bash
+rm -rf ~/.codex/plugins/data/xmlui-codex-xmlui-codex
 rm -rf ~/.codex/plugins/data/xmlui-codex
 ```
 
-This removes the plugin-managed binary at:
-
-```text
-~/.codex/plugins/data/xmlui-codex/bin/xmlui
-```
+The first path is the current Codex convention (`{plugin_name}-{marketplace_name}`). The second is a legacy path used by older versions of this plugin; remove it too if it exists.
 
 Optional verification:
 
 ```bash
-test -d ~/.codex/plugins/data/xmlui-codex && echo "still present" || echo "removed"
+test -d ~/.codex/plugins/data/xmlui-codex-xmlui-codex && echo "still present" || echo "removed"
+test -d ~/.codex/plugins/data/xmlui-codex && echo "legacy still present" || echo "legacy removed"
 ```
 
-## 7. Remove the plugin-managed MCP server only if this plugin created it
+## 7. Remove any `[mcp_servers.xmlui]` block from config.toml
 
-The setup flow may also register an `xmlui` MCP server. Check it:
+In current versions of the plugin, the `xmlui` MCP server is registered through
+the plugin's `.mcp.json`, not through `~/.codex/config.toml`. A leftover
+`[mcp_servers.xmlui]` block in `config.toml` shadows the plugin's registration
+and will fail MCP startup if its `command:` no longer exists.
+
+Check for one:
 
 ```bash
 codex mcp get xmlui
 ```
 
-If the `command:` points at the plugin-managed path
-`~/.codex/plugins/data/xmlui-codex/bin/xmlui`, remove it:
+If the output shows an entry, inspect the `command:` line:
 
-```bash
-codex mcp remove xmlui
-```
+- If it points at the plugin-managed path `~/.codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui` (or the legacy `~/.codex/plugins/data/xmlui-codex/bin/xmlui`), remove it:
 
-If your `xmlui` MCP server points somewhere else, such as a separately managed
-`/usr/local/bin/xmlui`, leave it alone — that is not plugin state. But if that
-`command:` no longer exists on disk, remove the entry: a stale path will fail
-MCP startup and the setup skill will preserve a broken entry by default.
+  ```bash
+  codex mcp remove xmlui
+  ```
+
+- If it points somewhere else (e.g. `/usr/local/bin/xmlui`), it's a manual override left over from an older setup. Remove it so the plugin's `.mcp.json` registration can take effect:
+
+  ```bash
+  codex mcp remove xmlui
+  ```
+
+  If you intentionally want a manual override, you can re-add it after the reset and the override will shadow the plugin's registration.
 
 ## 8. Optional: remove the starter project
 
@@ -200,7 +208,7 @@ Before re-adding the marketplace, these checks should all come back clean:
 rg -n '^\[marketplaces\.xmlui-codex\]|^\[plugins\."xmlui-codex@xmlui-codex"\]' ~/.codex/config.toml
 test -d ~/.codex/.tmp/marketplaces/xmlui-codex && echo "marketplace cache still present" || echo "marketplace cache removed"
 test -d ~/.codex/plugins/cache/xmlui-codex && echo "plugin cache still present" || echo "plugin cache removed"
-test -d ~/.codex/plugins/data/xmlui-codex && echo "plugin data still present" || echo "plugin data removed"
+test -d ~/.codex/plugins/data/xmlui-codex-xmlui-codex && echo "plugin data still present" || echo "plugin data removed"
 ```
 
 Expected result:
@@ -258,8 +266,10 @@ Codex does not currently expose a direct `codex plugin install ...` or
 
 Quit Codex and start a new session after enabling the plugin.
 
-This restart is required. It ensures the plugin skills and MCP metadata are
-loaded into the new session.
+This restart is required. It loads the plugin skills and starts the `xmlui`
+MCP server (which the plugin's `.mcp.json` registered automatically when you
+enabled it). The first MCP call lazy-installs the XMLUI CLI to
+`~/.codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui`.
 
 ## 15. Run the setup skill
 
@@ -272,33 +282,20 @@ press `$` to open the skill picker and select `xmlui-codex` (or the
 When you activate it, Codex will tell you the plugin is available in the
 session and prompt you for the XMLUI task.
 
-The plugin declares an `xmlui` MCP server, but the setup flow is what installs
-the CLI and registers a runnable `xmlui` server for this machine.
-
 Examples:
 
 ```text
 set up XMLUI for this machine
 ```
 
-or:
-
-```text
-install XMLUI and configure the MCP server
-```
-
 The setup flow should:
 
 1. run preflight checks
-2. install the XMLUI CLI if needed into `~/.codex/plugins/data/xmlui-codex/bin/`
-3. register the XMLUI MCP server with Codex
-4. ask whether to scaffold the starter project
-5. optionally start the dev server
+2. verify the XMLUI CLI is present (or trigger the lazy-install fallback)
+3. ask whether to scaffold the starter project
+4. print the dev-server command for the user to run in a separate terminal
 
-If `xmlui` is already installed and the `xmlui` MCP server is already
-configured, the setup run may still stop after verification and ask for the
-starter-project choice. That is expected. Codex must get an explicit yes/no
-answer before scaffolding `xmlui-weather`.
+If the XMLUI CLI is already installed, the setup run may still stop and ask for the starter-project choice. That is expected. Codex must get an explicit yes/no answer before scaffolding `xmlui-weather`.
 
 Recommended first-run choice:
 
@@ -306,7 +303,9 @@ Recommended first-run choice:
 - use the default target `~/xmlui-weather`
 - approve a rerun outside the sandbox if the template download needs network access
 
-After setup succeeds, the expected next flow is:
+After setup completes, run the dev-server command it prints in your own terminal — do not ask Codex to start it. Codex's tool sandbox kills child processes when the tool call ends, so a backgrounded `xmlui run` would die.
+
+Then the expected next flow is:
 
 1. open the weather app
 2. export a trace from XMLUI Inspector
@@ -321,6 +320,7 @@ After setup succeeds, the expected next flow is:
 - The large `/plugins` list is normal; filter by typing `xmlui-codex`.
 - If Codex is already running when you add the marketplace, expect two restarts total: one after add, one after enable.
 - If the marketplace is added before Codex launches, only the post-enable restart is needed.
+- The `xmlui` MCP server is registered automatically by the plugin's `.mcp.json`. There is no separate "register MCP" step and no extra restart after running setup.
 
 ## Paths involved
 
@@ -331,8 +331,8 @@ After setup succeeds, the expected next flow is:
 | Cached marketplace checkout | `~/.codex/.tmp/marketplaces/xmlui-codex/` |
 | Plugin cache | `~/.codex/plugins/cache/xmlui-codex/` |
 | Published plugin inside the checkout | `~/.codex/.tmp/marketplaces/xmlui-codex/plugins/xmlui-codex/` |
-| Plugin-managed CLI binary | `~/.codex/plugins/data/xmlui-codex/bin/xmlui` |
-| Plugin-managed data root | `~/.codex/plugins/data/xmlui-codex/` |
+| Plugin-managed CLI binary | `~/.codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui` |
+| Plugin-managed data root | `~/.codex/plugins/data/xmlui-codex-xmlui-codex/` |
 | Local conversation history | `~/.codex/history.jsonl` |
 | Local session snapshots | `~/.codex/sessions/` |
 | Local state database | `~/.codex/state_5.sqlite*` |

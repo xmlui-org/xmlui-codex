@@ -1,11 +1,11 @@
 ---
 name: xmlui-setup
-description: Set up a complete XMLUI development environment. Use when the user wants to start XMLUI development, install the XMLUI CLI, configure the XMLUI MCP server for Codex, or create a new XMLUI project.
+description: Set up a complete XMLUI development environment. Use when the user wants to start XMLUI development, install the XMLUI CLI, or create a new XMLUI project.
 ---
 
 # XMLUI Development Environment Setup (Codex)
 
-Your goal is to set up a complete XMLUI development environment for the user.
+Your goal is to scaffold a starter XMLUI project for the user. The XMLUI MCP server is auto-registered by the plugin's `.mcp.json` and lazy-installs the CLI on first use, so this skill no longer touches Codex MCP config.
 
 Before running any script in this skill, resolve the absolute path to this skill directory and run scripts from there.
 
@@ -19,11 +19,7 @@ Recommended single entrypoint:
 - Windows: `scripts/xmlui-setup.cmd`
 - macOS/Linux: `scripts/xmlui-setup.sh`
 
-The setup flow is not complete after MCP configuration. After the XMLUI MCP
-server is configured, the user must always be prompted about scaffolding the
-starter project. In an interactive terminal, the setup script may ask directly.
-In a non-interactive terminal, Codex must ask the user in chat and then rerun the
-setup script with the user's explicit choice.
+The setup flow is not complete after CLI verification. The user must always be prompted about scaffolding the starter project. In an interactive terminal, the setup script may ask directly. In a non-interactive terminal, Codex must ask the user in chat and then rerun the setup script with the user's explicit choice.
 
 Work through the steps below in order.
 
@@ -38,77 +34,30 @@ If it fails, diagnose the missing dependency and tell the user what to install.
 
 Do not proceed until preflight passes.
 
-## Step 2: Install the XMLUI CLI
+## Step 2: Verify the XMLUI CLI
 
-Do not require `xmlui` to be on PATH. The setup scripts manage the CLI in the plugin-owned location `~/.codex/plugins/data/xmlui-codex/bin/` by default.
+The XMLUI MCP server's `.mcp.json` wrapper auto-downloads the CLI to `~/.codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui` on first MCP invocation. If the user has used any `xmlui` MCP tool already, the binary is in place.
 
-- If the managed CLI is already present, skip to Step 3.
-- If missing, run the install script for the current OS:
-  - Windows: `scripts/install-cli.cmd` (or `scripts/install-cli.ps1`)
-  - macOS/Linux: `scripts/install-cli.sh`
+If the binary is not yet present, install it manually:
 
-After installation, verify with:
+- Windows: `scripts/install-cli.cmd` (or `scripts/install-cli.ps1`)
+- macOS/Linux: `scripts/install-cli.sh`
+
+Verify with:
 
 ```bash
-~/.codex/plugins/data/xmlui-codex/bin/xmlui --help
+~/.codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui --help
 ```
 
 If the command is still missing, stop and report the install failure.
 
-## Step 3: Configure XMLUI MCP for Codex
+## Step 3: Prompt for starter project scaffolding
 
-First check current MCP servers:
-
-```bash
-codex mcp list
-```
-
-If `xmlui` is already configured, skip to Step 4.
-
-If not configured, add it:
-
-```bash
-codex mcp add xmlui -- ~/.codex/plugins/data/xmlui-codex/bin/xmlui mcp
-```
-
-If `xmlui` is already configured with custom args or a custom command, do not overwrite it automatically — unless its `command:` does not resolve to an executable. A stale entry pointing at a missing binary will fail MCP startup; in that case, remove and replace it. Otherwise explain that the existing server was preserved.
-
-If the existing `xmlui` entry only uses plain `mcp` args, it is safe to update it to the plugin-managed CLI path.
-
-On Windows, use:
-
-```bash
-codex mcp add xmlui -- %USERPROFILE%\.codex\plugins\data\xmlui-codex\bin\xmlui.exe mcp
-```
-
-If setup runs from Git Bash on Windows, register the native Windows path, not the MSYS `/c/...` path.
-
-If `codex` is blocked by execution policy on Windows, use:
-
-```bash
-codex.cmd mcp list
-codex.cmd mcp add xmlui -- %USERPROFILE%\.codex\plugins\data\xmlui-codex\bin\xmlui.exe mcp
-```
-
-Verify:
-
-```bash
-codex mcp get xmlui
-```
-
-## Step 4: Prompt for starter project scaffolding
-
-After MCP configuration, ask the user whether they want to scaffold a starter
-project. Use "yes" as the default recommendation.
+Ask the user whether they want to scaffold a starter project. Use "yes" as the default recommendation.
 
 If yes, ask the user where to create the project. Offer `~/xmlui-weather` as the recommended default (template: `xmlui-weather`), and the current directory as an alternative. The user can also enter a custom path.
 
-If no, skip Step 4 and Step 5.
-
-In a non-interactive shell, do not treat the unavailable prompt as "no", and do
-not rerun setup with the skip flag unless the user explicitly says no. If the
-setup entrypoint exits with code `2` after printing the scaffold question, stop
-and ask the user in chat:
+In a non-interactive shell, do not treat the unavailable prompt as "no", and do not rerun setup with the skip flag unless the user explicitly says no. If the setup entrypoint exits with code `2` after printing the scaffold question, stop and ask the user in chat:
 
 ```text
 Do you want to scaffold the XMLUI starter project? The recommended default is yes, at ~/xmlui-weather. You can also choose the current directory or provide a custom path.
@@ -119,8 +68,7 @@ Then continue based on the user's answer:
 - If yes/default: rerun setup with the create-project flag and selected path.
   - Windows: `scripts/xmlui-setup.cmd -CreateProject -ProjectName <target-path>`
   - macOS/Linux: `scripts/xmlui-setup.sh --create-project --project-name=<target-path>`
-- If no: rerun setup with the skip-project-prompt flag only to record the
-  explicit skip and finish cleanly.
+- If no: rerun setup with the skip-project-prompt flag to record the explicit skip and finish cleanly.
   - Windows: `scripts/xmlui-setup.cmd -SkipProjectPrompt`
   - macOS/Linux: `scripts/xmlui-setup.sh --skip-project-prompt`
 
@@ -143,37 +91,27 @@ If it exists, tell the user and stop. Do not overwrite.
 Otherwise, create the weather project at the chosen path:
 
 ```bash
-~/.codex/plugins/data/xmlui-codex/bin/xmlui new xmlui-weather --output <target-path>
+~/.codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui new xmlui-weather --output <target-path>
 ```
 
-Windows helper script:
+## Step 4: Tell the user how to start the dev server
 
-```bash
-scripts/dev-setup.cmd -Template xmlui-weather -ProjectName <target-path>
+Do not start the dev server from inside this skill. Codex's tool sandbox tears down child processes when the tool call ends, so a backgrounded `xmlui run` will be killed shortly after launch.
+
+Print the exact command for the user to run in their own terminal:
+
+```text
+cd <target-path> && ~/.codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui run
 ```
 
-Remember the chosen path. You will need it in Step 5.
+On Windows:
 
-## Step 5: Start the dev server
-
-Before starting a new dev server, check whether one is already responding on the
-default local URL `http://127.0.0.1:8080/` (or the `XMLUI_DEV_PORT` override if
-the setup scripts expose one in the environment). If the app already responds,
-report that the existing server is healthy and do not start another `xmlui run`.
-
-If no server is up yet, start the app:
-
-```bash
-cd <target-path> && ~/.codex/plugins/data/xmlui-codex/bin/xmlui run
+```text
+cd <target-path>; & "$env:USERPROFILE\.codex\plugins\data\xmlui-codex-xmlui-codex\bin\xmlui.exe" run
 ```
-
-Do not assume a detached/background launch succeeded. Confirm that the app becomes
-reachable on the local URL before reporting success. If it never responds, stop
-and tell the user that the server did not become ready instead of requesting a
-second `xmlui run` blindly.
 
 ## Final message
 
 When complete, report:
 
-**Your XMLUI environment is ready.** See the [README](https://github.com/xmlui-org/xmlui-codex#readme) for a guided tour of the XMLUI MCP tools and the Inspector.
+**Your XMLUI environment is ready.** Run the dev server command above in a terminal, then see the [README](https://github.com/xmlui-org/xmlui-codex#readme) for a guided tour of the XMLUI MCP tools and the Inspector.

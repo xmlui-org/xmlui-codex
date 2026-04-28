@@ -6,7 +6,7 @@ Get a running XMLUI app, an AI assistant that knows the XMLUI docs, and a built-
 
 Codex. Install from the [Codex CLI docs](https://developers.openai.com/codex/cli) (or `npm i -g @openai/codex` / `brew install --cask codex`). Source: [openai/codex](https://github.com/openai/codex).
 
-**Quit any running Codex sessions before you start.** This guide assumes Codex is not running when you add the marketplace, which keeps the restart count predictable: two restarts total, one after enabling the plugin and one after running setup.
+**Quit any running Codex sessions before you start.** This guide assumes Codex is not running when you add the marketplace, which keeps the restart count predictable: one restart total, after enabling the plugin.
 
 ## Add a marketplace
 
@@ -26,13 +26,11 @@ Now start Codex, then type this at the Codex prompt (not your OS shell):
 
 Type `xmlui-codex` to filter the list, open `xmlui-codex` from `XMLUI for Codex`, and press `Space` to install or enable it.
 
-**Restart #1: restart Codex now.** This restart is required after enabling the plugin so its skills and MCP metadata load into the new session.
-
-A second restart is required later, after setup runs. Codex binds MCP servers at session start and does not hot-reload them, so the `xmlui` MCP server that setup registers only becomes live in the session after that.
+**Restart Codex now.** This restart is required after enabling the plugin so its skills and MCP server load into the new session. This is the only restart you need — the `xmlui` MCP server is registered automatically by the plugin's `.mcp.json` and lazy-installs the XMLUI CLI on first use.
 
 After restarting, type `$xmlui-codex` in chat to confirm the plugin is loaded. Codex should reply that `xmlui-codex` is available in this workspace and list the two skills:
 
-- `xmlui-codex:xmlui-setup` for installing/configuring an XMLUI dev environment
+- `xmlui-codex:xmlui-setup` for scaffolding an XMLUI starter project
 - `xmlui-codex:distill-trace` for analyzing an exported XMLUI Inspector trace
 
 ## Set up
@@ -45,17 +43,13 @@ Set up XMLUI for this machine
 
 (Alternatively, press `$` in chat to open the skill picker and select `XMLUI Setup` directly.)
 
-This downloads the XMLUI CLI if needed into `~/.codex/plugins/data/xmlui-codex/bin/`, registers the promised `xmlui` MCP server with Codex to use that binary, creates the `xmlui-weather` app in a directory you choose, and starts the dev server. It does not add `xmlui` to your shell PATH.
-
-Installing the plugin declares the `xmlui` MCP server in plugin metadata. Running setup is what makes that server runnable on this machine.
-
-If `xmlui` and the `xmlui` MCP server are already installed, setup can still stop and ask whether it should scaffold `xmlui-weather`. That prompt is expected. The recommended default is `~/xmlui-weather`.
+The setup skill scaffolds the `xmlui-weather` app in a directory you choose (the recommended default is `~/xmlui-weather`). It does not start the dev server, register MCP, or add `xmlui` to your shell PATH — the plugin's `.mcp.json` already registered the MCP server when you enabled the plugin.
 
 If template download needs network access, Codex may ask to rerun setup outside the sandbox.
 
-**Restart #2: restart Codex once setup finishes.** The `xmlui` MCP server is now registered, but Codex only starts MCP servers at session boot. Without this restart, the XMLUI MCP tools will not be available even though `codex mcp get xmlui` shows the registration.
+When setup finishes, it will print the exact command to run the dev server. **Run that command yourself in a separate terminal.** Codex's tool sandbox tears down child processes after a tool call, so a backgrounded `xmlui run` from inside the skill would die immediately.
 
-After restarting, verify by asking Codex "What XMLUI MCP tools are available?" — it should enumerate the live tool list, not just the names cached in plugin files.
+To verify the MCP tools are live, ask Codex "What XMLUI MCP tools are available?" — it should enumerate the live tool list.
 
 ## Explore the MCP tools
 

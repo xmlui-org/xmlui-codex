@@ -8,7 +8,8 @@ CODEX_DIR="${HOME}/.codex"
 CONFIG_PATH="${CODEX_DIR}/config.toml"
 MARKETPLACE_CACHE_DIR="${CODEX_DIR}/.tmp/marketplaces/${MARKETPLACE_NAME}"
 PLUGIN_CACHE_DIR="${CODEX_DIR}/plugins/cache/${MARKETPLACE_NAME}"
-PLUGIN_DATA_DIR="${CODEX_DIR}/plugins/data/${MARKETPLACE_NAME}"
+PLUGIN_DATA_DIR="${CODEX_DIR}/plugins/data/${MARKETPLACE_NAME}-${MARKETPLACE_NAME}"
+LEGACY_PLUGIN_DATA_DIR="${CODEX_DIR}/plugins/data/${MARKETPLACE_NAME}"
 DEFAULT_PROJECT_PATH="${HOME}/xmlui-weather"
 
 APPLY_CHANGES="no"
@@ -169,13 +170,17 @@ maybe_remove_plugin_managed_mcp() {
     return 0
   fi
 
-  if [[ "${mcp_output}" == *".codex/plugins/data/xmlui-codex/bin/xmlui"* ]] || [[ "${mcp_output}" == *".codex\\plugins\\data\\xmlui-codex\\bin\\xmlui.exe"* ]]; then
+  if [[ "${mcp_output}" == *".codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui"* ]] \
+     || [[ "${mcp_output}" == *".codex/plugins/data/xmlui-codex/bin/xmlui"* ]] \
+     || [[ "${mcp_output}" == *".codex\\plugins\\data\\xmlui-codex-xmlui-codex\\bin\\xmlui.exe"* ]] \
+     || [[ "${mcp_output}" == *".codex\\plugins\\data\\xmlui-codex\\bin\\xmlui.exe"* ]]; then
     print_action "run codex mcp remove xmlui"
     if [[ "${APPLY_CHANGES}" == "yes" ]]; then
       codex mcp remove xmlui
     fi
   else
-    log "Keeping xmlui MCP server because it is not plugin-managed."
+    warn "An xmlui MCP server entry exists in config.toml but does not point at the plugin-managed CLI."
+    warn "It will shadow the plugin's .mcp.json registration. To remove it: codex mcp remove xmlui"
   fi
 }
 
@@ -197,6 +202,7 @@ maybe_remove_plugin_managed_mcp
 remove_path "${MARKETPLACE_CACHE_DIR}"
 remove_path "${PLUGIN_CACHE_DIR}"
 remove_path "${PLUGIN_DATA_DIR}"
+remove_path "${LEGACY_PLUGIN_DATA_DIR}"
 
 if [[ "${REMOVE_PROJECT}" == "yes" ]]; then
   remove_path "${PROJECT_PATH}"

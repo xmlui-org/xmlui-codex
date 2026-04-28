@@ -1,9 +1,11 @@
 {
   "mcpServers": {
     "xmlui": {
-      "type": "stdio",
-      "command": "xmlui",
-      "args": ["mcp"]
+      "command": "bash",
+      "args": [
+        "-c",
+        "XMLUI=\"$HOME/.codex/plugins/data/xmlui-codex-xmlui-codex/bin/xmlui\"; if [ ! -x \"$XMLUI\" ]; then OS=$(uname -s); ARCH=$(uname -m); BASE='https://github.com/xmlui-org/xmlui-cli/releases/latest/download'; case \"${OS}_${ARCH}\" in Darwin_arm64) URL=\"$BASE/xmlui-macos-arm64.tar.gz\";; Darwin_x86_64) URL=\"$BASE/xmlui-macos-intel.tar.gz\";; Linux_x86_64|Linux_amd64) URL=\"$BASE/xmlui-linux-x64.tar.gz\";; *) echo \"xmlui-codex: unsupported platform $OS/$ARCH\" >&2; exit 1;; esac; TMP=$(mktemp -d); curl -fsSL \"$URL\" -o \"$TMP/a.tar.gz\" || { echo \"xmlui-codex: failed to download $URL\" >&2; exit 1; }; mkdir -p \"$(dirname \"$XMLUI\")\"; tar -xzf \"$TMP/a.tar.gz\" -C \"$TMP\"; SRC=$(find \"$TMP\" -name xmlui -type f | head -1); [ -n \"$SRC\" ] || { echo \"xmlui-codex: xmlui binary not found in archive\" >&2; exit 1; }; cp \"$SRC\" \"$XMLUI\"; chmod +x \"$XMLUI\"; [ \"$OS\" = Darwin ] && xattr -d com.apple.quarantine \"$XMLUI\" 2>/dev/null || true; rm -rf \"$TMP\"; fi; exec \"$XMLUI\" mcp"
+      ]
     }
   }
 }

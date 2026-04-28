@@ -48,7 +48,7 @@ function Get-XmluiInstallDir {
     return $env:XMLUI_CLI_INSTALL_DIR
   }
 
-  return Join-Path $HOME ".codex/plugins/data/xmlui-codex/bin"
+  return Join-Path $HOME ".codex/plugins/data/xmlui-codex-xmlui-codex/bin"
 }
 
 function Get-XmluiCliPath {

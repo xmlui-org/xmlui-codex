@@ -24,49 +24,8 @@ if (Test-Path -LiteralPath $ProjectName) {
   }
 }
 
-Write-Log "Project ready: $ProjectName"
-Write-Log "To start the dev server, run:"
-Write-Log "  cd $ProjectName"
-Write-Log "  $xmluiCmd run"
-
-if ($NoRun) {
-  Write-Log "Skipping dev server start because -NoRun was provided."
-  exit 0
-}
-
-$devUrl = Get-XmluiDevUrl
-if (Test-HttpUrl -Url $devUrl) {
-  Write-Log "Existing dev server already responds at $devUrl"
-  Write-Log "Skipping a second xmlui run for: $ProjectName"
-  exit 0
-}
-
 $resolvedProjectPath = (Resolve-Path -LiteralPath $ProjectName).Path
-$xmluiCmd = Get-XmluiCommand
-$xmluiExecPath = if (Test-Path -LiteralPath $xmluiCmd) { $xmluiCmd } else {
-  $xmluiCmdInfo = Get-Command $xmluiCmd -ErrorAction SilentlyContinue
-  if (-not $xmluiCmdInfo) {
-    Fail "Unable to resolve xmlui command for starting the dev server."
-  }
 
-  if ($xmluiCmdInfo.Source) { $xmluiCmdInfo.Source } else { $xmluiCmdInfo.Path }
-}
-
-$stdoutLogPath = Join-Path $resolvedProjectPath ".xmlui-codex-dev.out.log"
-$stderrLogPath = Join-Path $resolvedProjectPath ".xmlui-codex-dev.err.log"
-Write-Log "Starting dev server in a separate process..."
-$process = Start-Process -FilePath $xmluiExecPath -ArgumentList "run" -WorkingDirectory $resolvedProjectPath -RedirectStandardOutput $stdoutLogPath -RedirectStandardError $stderrLogPath -PassThru
-
-if (Wait-HttpUrl -Url $devUrl -TimeoutSeconds 15) {
-  Write-Log "Dev server is responding at $devUrl"
-  Write-Log "Dev server started for: $resolvedProjectPath"
-  exit 0
-}
-
-$process.Refresh()
-if (-not $process.HasExited) {
-  Write-WarnLog "Started xmlui run (pid $($process.Id)), but no response arrived from $devUrl within 15 seconds."
-} else {
-  Write-WarnLog "xmlui run exited before $devUrl became reachable."
-}
-Fail "Dev server did not become ready. Check $stdoutLogPath and $stderrLogPath."
+Write-Log "Project ready: $resolvedProjectPath"
+Write-Log "To start the dev server, run this in a separate terminal:"
+Write-Log "  cd $resolvedProjectPath; & '$xmluiCmd' run"

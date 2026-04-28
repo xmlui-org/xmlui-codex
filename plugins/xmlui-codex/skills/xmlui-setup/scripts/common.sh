@@ -49,11 +49,11 @@ get_xmlui_install_dir() {
 
   detect_platform
   if [[ "${PLATFORM_OS}" == "win" ]] && [[ -n "${USERPROFILE:-}" ]] && command -v cygpath >/dev/null 2>&1; then
-    printf "%s\n" "$(cygpath -u "${USERPROFILE}")/.codex/plugins/data/xmlui-codex/bin"
+    printf "%s\n" "$(cygpath -u "${USERPROFILE}")/.codex/plugins/data/xmlui-codex-xmlui-codex/bin"
     return 0
   fi
 
-  printf "%s\n" "${HOME}/.codex/plugins/data/xmlui-codex/bin"
+  printf "%s\n" "${HOME}/.codex/plugins/data/xmlui-codex-xmlui-codex/bin"
 }
 
 get_xmlui_cli_path() {

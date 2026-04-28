@@ -37,8 +37,6 @@ if (-not $xmluiDetected) {
   & (Join-Path $scriptRoot "install-cli.ps1")
 }
 
-& (Join-Path $scriptRoot "configure-mcp.ps1")
-
 if ($CreateProject) {
   if ([string]::IsNullOrWhiteSpace($ProjectName)) {
     $ProjectName = $defaultProjectPath
